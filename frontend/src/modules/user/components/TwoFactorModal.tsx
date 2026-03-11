@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -13,52 +13,27 @@ import {
     Divider,
     Chip,
 } from '@mui/material';
-import { useAppDispatch } from '../../store/store';
-import { useSelector } from 'react-redux';
-import type { AppState } from '../../store/store';
-import { generateOtpSecret, verifyAndActivateOtp, clearOtpSetup, clearOtpError, disableOtp } from '../store/user.slice';
+import { useTwoFactor } from '../hooks/useTwoFactor';
 
 interface TwoFactorModalProps {
     open: boolean;
     onClose: () => void;
-    mode: 'activate' | 'deactivate';  // ← nouveau
+    mode: 'activate' | 'deactivate';
 }
 
 export const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ open, onClose, mode }) => {
-    const dispatch = useAppDispatch();
-    const { otpSetup, otpActivationResult, isOtpLoading, otpError } = useSelector(
-        (state: AppState) => state.user
-    );
-
-    const [otpCode, setOtpCode] = useState('');
-
-    const handleGenerate = () => {
-        dispatch(generateOtpSecret());
-    };
-
-    const handleVerify = async () => {
-        if (!otpCode) return;
-        try {
-            await dispatch(verifyAndActivateOtp(otpCode)).unwrap();
-        } catch {
-            // Error handled by Redux
-        }
-    };
-    const handleDeactivate = async () => {
-        try {
-            await dispatch(disableOtp()).unwrap();
-            onClose();
-        } catch {
-            // Error handled by Redux
-        }
-    };
-
-    const handleClose = () => {
-        dispatch(clearOtpSetup());
-        dispatch(clearOtpError());
-        setOtpCode('');
-        onClose();
-    };
+    const {
+        otpSetup,
+        otpActivationResult,
+        isOtpLoading,
+        otpError,
+        otpCode,
+        handleGenerate,
+        handleVerify,
+        handleDeactivate,
+        handleOtpChange,
+        handleClose
+    } = useTwoFactor(onClose);
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -115,7 +90,7 @@ export const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ open, onClose, m
                         <TextField
                             label="Code OTP"
                             value={otpCode}
-                            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            onChange={(e) => handleOtpChange(e.target.value)}
                             inputProps={{ maxLength: 6, inputMode: 'numeric' }}
                             placeholder="000000"
                             disabled={isOtpLoading}

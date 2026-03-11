@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Box,
     TextField,
@@ -10,56 +10,21 @@ import {
     Divider,
     Link as MuiLink,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../../store/store';
-import { useSelector } from 'react-redux';
-import type { AppState } from '../../store/store';
-import { verifyOtpLogin, verifyBackupCode, clearError } from '../store/auth.slice';
+import { useOtpVerify } from '../hooks/useOtpVerify';
 
 export const OtpVerifyPage: React.FC = () => {
-    const dispatch = useAppDispatch();
-    const navigate = useNavigate();
-    const { isLoading, error, tempToken, isAuthenticated } = useSelector((state: AppState) => state.auth);
-
-    const [otpCode, setOtpCode] = useState('');
-    const [backupMode, setBackupMode] = useState(false);
-    const [backupCodeValue, setBackupCodeValue] = useState('');
-
-    React.useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/profile');
-        }
-    }, [isAuthenticated, navigate]);
-
-    React.useEffect(() => {
-        if (!tempToken) {
-            navigate('/login');
-        }
-    }, [tempToken, navigate]);
-
-    const handleOtpSubmit = async () => {
-        if (!tempToken || !otpCode) return;
-        dispatch(clearError());
-        try {
-            await dispatch(verifyOtpLogin({ tempToken, otpToken: otpCode })).unwrap();
-        } catch {
-        }
-    };
-
-    const handleBackupSubmit = async () => {
-        if (!tempToken || !backupCodeValue) return;
-        dispatch(clearError());
-        try {
-            await dispatch(verifyBackupCode({ tempToken, backupCode: backupCodeValue })).unwrap();
-        } catch {
-            // Error handled by Redux
-        }
-    };
-
-    const toggleBackupMode = () => {
-        setBackupMode(!backupMode);
-        dispatch(clearError());
-    };
+    const {
+        isLoading,
+        error,
+        otpCode,
+        backupMode,
+        backupCodeValue,
+        handleOtpChange,
+        handleBackupCodeChange,
+        handleOtpSubmit,
+        handleBackupSubmit,
+        toggleBackupMode
+    } = useOtpVerify();
 
     return (
         <Paper sx={{ maxWidth: 420, mx: 'auto', mt: 6, p: 4 }}>
@@ -82,7 +47,7 @@ export const OtpVerifyPage: React.FC = () => {
                         variant="outlined"
                         fullWidth
                         value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        onChange={(e) => handleOtpChange(e.target.value)}
                         disabled={isLoading}
                         inputProps={{ maxLength: 6, inputMode: 'numeric' }}
                         placeholder="000000"
@@ -119,7 +84,7 @@ export const OtpVerifyPage: React.FC = () => {
                         variant="outlined"
                         fullWidth
                         value={backupCodeValue}
-                        onChange={(e) => setBackupCodeValue(e.target.value.toUpperCase())}
+                        onChange={(e) => handleBackupCodeChange(e.target.value)}
                         disabled={isLoading}
                         placeholder="ABCD1234"
                     />
