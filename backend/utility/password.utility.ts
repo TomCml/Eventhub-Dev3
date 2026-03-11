@@ -26,16 +26,17 @@ export const generateSignature = (payload: UserPayload) => {
 }
 
 export const validateSignature = (req: any) => {
-    let signature = req.cookies?.token;
-    if (!signature) {
-        signature = req.get("Authorization");
-    }
+    const signature = req.cookies?.token;
     
     if (signature) {
-        const token = signature.startsWith("Bearer ") ? signature.split(" ")[1] : signature;
-        const payload = jwt.verify(token, getEnvVariable("JWT_SECRET")) as UserPayload;
-        req.user = payload;
-        return true;
+        try {
+            const payload = jwt.verify(signature, getEnvVariable("JWT_SECRET")) as UserPayload;
+            req.user = payload;
+            return true;
+        } catch (error) {
+            console.error("Token verification failed:", error);
+            return false;
+        }
     }
     return false;
 }

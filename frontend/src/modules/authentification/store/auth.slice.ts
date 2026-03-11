@@ -3,7 +3,7 @@ import type { Dependencies } from '../../store/dependencies';
 
 
 interface AuthState {
-    token: string | null;
+    isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
     // OTP state
@@ -12,7 +12,6 @@ interface AuthState {
 }
 
 interface LoginResponse {
-    token: string;
     otpRequired?: boolean;
     tempToken?: string;
     user: {
@@ -24,7 +23,6 @@ interface LoginResponse {
 }
 
 interface RegisterResponse {
-    token: string;
     user: {
         id: string;
         username: string;
@@ -34,7 +32,7 @@ interface RegisterResponse {
 }
 
 const initialState: AuthState = {
-    token: null,
+    isAuthenticated: false,
     isLoading: false,
     error: null,
     otpRequired: false,
@@ -89,14 +87,27 @@ export const verifyBackupCode = createAsyncThunk<LoginResponse, { tempToken: str
     }
 );
 
+// Logout thunk
+export const logoutUser = createAsyncThunk<void, void, { extra: Dependencies }>(
+    'auth/logout',
+    async (_, { extra, rejectWithValue }) => {
+        try {
+            await extra.authGateway.logout();
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Erreur lors de la déconnexion');
+        }
+    }
+);
+
 export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
         logout: (state) => {
-            state.token = null;
+            state.isAuthenticated = false;
             state.otpRequired = false;
             state.tempToken = null;
+            state.error = null;
         },
         clearError: (state) => {
             state.error = null;
@@ -104,9 +115,7 @@ export const authSlice = createSlice({
         hydrateAuth: (state) => {
             state.isLoading = false;
             state.error = null;
-            // Since we use cookies, we don't necessarily need the token in state, 
-            // but we can set a dummy one or a boolean for 'isAuthenticated'
-            state.token = "authenticated"; 
+            state.isAuthenticated = true;
         }
     },
     extraReducers: (builder) => {
@@ -119,7 +128,7 @@ export const authSlice = createSlice({
                     state.otpRequired = true;
                     state.tempToken = action.payload.tempToken || null;
                 } else {
-                    state.token = "authenticated";
+                    state.isAuthenticated = true;
                     state.otpRequired = false;
                     state.tempToken = null;
                 }
@@ -132,7 +141,7 @@ export const authSlice = createSlice({
             .addCase(registerUser.pending, (state) => { state.isLoading = true; state.error = null; })
             .addCase(registerUser.fulfilled, (state) => {
                 state.isLoading = false;
-                state.token = null; // No auto-login on register as requested
+                state.isAuthenticated = false; // No auto-login on register as requested
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
@@ -142,7 +151,7 @@ export const authSlice = createSlice({
             .addCase(verifyOtpLogin.pending, (state) => { state.isLoading = true; state.error = null; })
             .addCase(verifyOtpLogin.fulfilled, (state) => {
                 state.isLoading = false;
-                state.token = "authenticated";
+                state.isAuthenticated = true;
                 state.otpRequired = false;
                 state.tempToken = null;
             })
@@ -154,13 +163,26 @@ export const authSlice = createSlice({
             .addCase(verifyBackupCode.pending, (state) => { state.isLoading = true; state.error = null; })
             .addCase(verifyBackupCode.fulfilled, (state) => {
                 state.isLoading = false;
-                state.token = "authenticated";
+                state.isAuthenticated = true;
                 state.otpRequired = false;
                 state.tempToken = null;
             })
             .addCase(verifyBackupCode.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = (action.payload as string) || action.error.message || "Code de secours invalide";
+            })
+            // Logout
+            .addCase(logoutUser.fulfilled, (state) => {
+                state.isAuthenticated = false;
+                state.otpRequired = false;
+                state.tempToken = null;
+                state.error = null;
+            })
+            .addCase(logoutUser.rejected, (state) => {
+                // Even if backend logout fails, we clear the local state to avoid blocking the user
+                state.isAuthenticated = false;
+                state.otpRequired = false;
+                state.tempToken = null;
             });
     }
 });

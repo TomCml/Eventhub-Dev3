@@ -19,20 +19,18 @@ import { verifyOtpLogin, verifyBackupCode, clearError } from '../store/auth.slic
 export const OtpVerifyPage: React.FC = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const { isLoading, error, tempToken, token } = useSelector((state: AppState) => state.auth);
+    const { isLoading, error, tempToken, isAuthenticated } = useSelector((state: AppState) => state.auth);
 
     const [otpCode, setOtpCode] = useState('');
     const [backupMode, setBackupMode] = useState(false);
     const [backupCodeValue, setBackupCodeValue] = useState('');
 
-    // Redirect if already authenticated
     React.useEffect(() => {
-        if (token) {
+        if (isAuthenticated) {
             navigate('/profile');
         }
-    }, [token, navigate]);
+    }, [isAuthenticated, navigate]);
 
-    // Redirect if no tempToken (user didn't go through login)
     React.useEffect(() => {
         if (!tempToken) {
             navigate('/login');
@@ -45,7 +43,6 @@ export const OtpVerifyPage: React.FC = () => {
         try {
             await dispatch(verifyOtpLogin({ tempToken, otpToken: otpCode })).unwrap();
         } catch {
-            // Error handled by Redux
         }
     };
 

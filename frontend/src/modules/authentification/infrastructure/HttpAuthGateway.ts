@@ -31,4 +31,10 @@ export class HttpAuthGateway implements AuthGateway {
         });
         return response.data.data;
     }
+
+    async logout() {
+        await axios.post(`${API_BASE}/users/logout`, {}, {
+            withCredentials: true
+        });
+    }
 }

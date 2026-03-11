@@ -1,7 +1,7 @@
 import { hydrateProfile } from "../store/user.slice";
 import type { AppDispatch, AppGetState } from "../../store/store";
 import type { Dependencies } from "../../store/dependencies";
-import { hydrateAuth, logout } from "../../authentification/store/auth.slice";
+import { hydrateAuth, logoutUser } from "../../authentification/store/auth.slice";
 
 export const fetchProfileAction = () => async (
     dispatch: AppDispatch,
@@ -14,6 +14,6 @@ export const fetchProfileAction = () => async (
         dispatch(hydrateAuth());
     } catch (error) {
         console.error("Hydration failed, logging out", error);
-        dispatch(logout());
+        dispatch(logoutUser());
     }
 };

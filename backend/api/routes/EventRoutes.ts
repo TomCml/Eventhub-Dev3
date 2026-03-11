@@ -10,7 +10,7 @@ import {
 
 const router = Router();
 
-router.get("/",getAllEvents);
+router.get("/", AuthMiddleware, getAllEvents);
 
 router.get("/:id", AuthMiddleware, getEventById);
 

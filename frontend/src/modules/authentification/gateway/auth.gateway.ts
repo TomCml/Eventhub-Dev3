@@ -3,4 +3,5 @@ export interface AuthGateway {
     register(payload: any): Promise<any>;
     verifyOtpLogin(tempToken: string, otpToken: string): Promise<any>;
     verifyBackupCode(tempToken: string, backupCode: string): Promise<any>;
+    logout(): Promise<void>;
 }

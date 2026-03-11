@@ -15,19 +15,16 @@ export const useLogin = () => {
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    // Fetching auth state from Redux
-    const { isLoading, error: authError, token, otpRequired } = useSelector(
+    const { isLoading, error: authError, isAuthenticated, otpRequired } = useSelector(
         (state: AppState) => state.auth
     );
 
-    // Redirect to profile after successful login (token received)
     useEffect(() => {
-        if (token) {
+        if (isAuthenticated) {
             navigate('/profile');
         }
-    }, [token, navigate]);
+    }, [isAuthenticated, navigate]);
 
-    // Redirect to OTP verification page if OTP is required
     useEffect(() => {
         if (otpRequired) {
             navigate('/otp-verify');
