@@ -1,5 +1,6 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { ApiResponseMiddleware, errorHandlerMiddleware } from './middlewares/index';
 import { getEnvVariable } from '../utility/index';
@@ -10,9 +11,18 @@ dotenv.config();
 const app = express();
 
 // Middlewares globaux
-app.use(cors());
-app.use(express.json());
+app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.headers['access-control-request-private-network'] === 'true') {
+        res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    }
+    next();
+});
+
+// Autoriser toutes les origines (répond avec l'origine demandée) et permettre les credentials
+app.use(cors({ origin: true, credentials: true }));
 app.use(ApiResponseMiddleware);
+app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api', Router);
 

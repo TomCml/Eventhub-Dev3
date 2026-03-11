@@ -26,9 +26,14 @@ export const generateSignature = (payload: UserPayload) => {
 }
 
 export const validateSignature = (req: any) => {
-    const signature = req.get("Authorization");
+    let signature = req.cookies?.token;
+    if (!signature) {
+        signature = req.get("Authorization");
+    }
+    
     if (signature) {
-        const payload = jwt.verify(signature.split(" ")[1], getEnvVariable("JWT_SECRET")) as UserPayload;
+        const token = signature.startsWith("Bearer ") ? signature.split(" ")[1] : signature;
+        const payload = jwt.verify(token, getEnvVariable("JWT_SECRET")) as UserPayload;
         req.user = payload;
         return true;
     }

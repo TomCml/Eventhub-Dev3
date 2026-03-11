@@ -1,13 +1,8 @@
-export interface UserProfile {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    createdAt: string;
-}
+import type { UserProfile } from "../store/user.slice";
 
 export interface UserGateway {
     getProfile(): Promise<UserProfile>;
-    updateProfile(data: Partial<UserProfile>): Promise<UserProfile>;
+    generateOtpSecret(): Promise<any>;
+    verifyAndActivateOtp(otpToken: string): Promise<any>;
+    disableOtp(): Promise<any>;
 }

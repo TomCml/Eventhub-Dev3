@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { Dependencies } from '../../store/dependencies';
 
-const API_BASE = 'http://localhost:3000/api';
 
 interface AuthState {
     token: string | null;
@@ -41,79 +41,51 @@ const initialState: AuthState = {
     tempToken: null,
 };
 
-// Login thunk — appel réel vers le backend
-export const loginUser = createAsyncThunk(
+// Login thunk
+export const loginUser = createAsyncThunk<LoginResponse, { email: string; password: string }, { extra: Dependencies }>(
     'auth/login',
-    async (payload: { email: string; password: string }) => {
-        const response = await fetch(`${API_BASE}/users/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Identifiants invalides');
+    async (payload, { extra, rejectWithValue }) => {
+        try {
+            return await extra.authGateway.login(payload.email, payload.password);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Identifiants invalides');
         }
-
-        return data.data as LoginResponse;
     }
 );
 
-// Register thunk — appel réel vers le backend
-export const registerUser = createAsyncThunk(
+// Register thunk
+export const registerUser = createAsyncThunk<RegisterResponse, { username: string; email: string; password: string }, { extra: Dependencies }>(
     'auth/register',
-    async (payload: { username: string; email: string; password: string }) => {
-        const response = await fetch(`${API_BASE}/users/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || "Erreur lors de l'inscription");
+    async (payload, { extra, rejectWithValue }) => {
+        try {
+            return await extra.authGateway.register(payload);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || "Erreur lors de l'inscription");
         }
-
-        return data.data as RegisterResponse;
     }
 );
 
 // OTP login verification thunk
-export const verifyOtpLogin = createAsyncThunk(
+export const verifyOtpLogin = createAsyncThunk<LoginResponse, { tempToken: string; otpToken: string }, { extra: Dependencies }>(
     'auth/verifyOtpLogin',
-    async (payload: { tempToken: string; otpToken: string }) => {
-        const response = await fetch(`${API_BASE}/otp/verify-login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Code OTP invalide');
+    async (payload, { extra, rejectWithValue }) => {
+        try {
+            return await extra.authGateway.verifyOtpLogin(payload.tempToken, payload.otpToken);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Code OTP invalide');
         }
-
-        return data.data as LoginResponse;
     }
 );
 
 // Backup code verification thunk
-export const verifyBackupCode = createAsyncThunk(
+export const verifyBackupCode = createAsyncThunk<LoginResponse, { tempToken: string; backupCode: string }, { extra: Dependencies }>(
     'auth/verifyBackupCode',
-    async (payload: { tempToken: string; backupCode: string }) => {
-        const response = await fetch(`${API_BASE}/otp/verify-backup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Code de secours invalide');
+    async (payload, { extra, rejectWithValue }) => {
+        try {
+            return await extra.authGateway.verifyBackupCode(payload.tempToken, payload.backupCode);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Code de secours invalide');
         }
-
-        return data.data as LoginResponse;
     }
 );
 
@@ -129,6 +101,13 @@ export const authSlice = createSlice({
         clearError: (state) => {
             state.error = null;
         },
+        hydrateAuth: (state) => {
+            state.isLoading = false;
+            state.error = null;
+            // Since we use cookies, we don't necessarily need the token in state, 
+            // but we can set a dummy one or a boolean for 'isAuthenticated'
+            state.token = "authenticated"; 
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -140,51 +119,51 @@ export const authSlice = createSlice({
                     state.otpRequired = true;
                     state.tempToken = action.payload.tempToken || null;
                 } else {
-                    state.token = action.payload.token;
+                    state.token = "authenticated";
                     state.otpRequired = false;
                     state.tempToken = null;
                 }
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.error.message || "Erreur inconnue";
+                state.error = (action.payload as string) || action.error.message || "Erreur inconnue";
             })
             // Register
             .addCase(registerUser.pending, (state) => { state.isLoading = true; state.error = null; })
-            .addCase(registerUser.fulfilled, (state, action) => {
+            .addCase(registerUser.fulfilled, (state) => {
                 state.isLoading = false;
-                state.token = action.payload.token;
+                state.token = null; // No auto-login on register as requested
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.error.message || "Erreur inconnue";
+                state.error = (action.payload as string) || action.error.message || "Erreur inconnue";
             })
             // OTP Login Verification
             .addCase(verifyOtpLogin.pending, (state) => { state.isLoading = true; state.error = null; })
-            .addCase(verifyOtpLogin.fulfilled, (state, action) => {
+            .addCase(verifyOtpLogin.fulfilled, (state) => {
                 state.isLoading = false;
-                state.token = action.payload.token;
+                state.token = "authenticated";
                 state.otpRequired = false;
                 state.tempToken = null;
             })
             .addCase(verifyOtpLogin.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.error.message || "Code OTP invalide";
+                state.error = (action.payload as string) || action.error.message || "Code OTP invalide";
             })
             // Backup Code Verification
             .addCase(verifyBackupCode.pending, (state) => { state.isLoading = true; state.error = null; })
-            .addCase(verifyBackupCode.fulfilled, (state, action) => {
+            .addCase(verifyBackupCode.fulfilled, (state) => {
                 state.isLoading = false;
-                state.token = action.payload.token;
+                state.token = "authenticated";
                 state.otpRequired = false;
                 state.tempToken = null;
             })
             .addCase(verifyBackupCode.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.error.message || "Code de secours invalide";
+                state.error = (action.payload as string) || action.error.message || "Code de secours invalide";
             });
     }
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, hydrateAuth } = authSlice.actions;
 export default authSlice.reducer;

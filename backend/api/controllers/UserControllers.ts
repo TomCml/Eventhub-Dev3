@@ -18,7 +18,18 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
             password,
         });
 
-        res.status(201).jsonSuccess(result);
+        if (result.token) {
+            res.cookie('token', result.token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000 // 1 day
+            });
+        }
+
+        const { token, ...responseData } = result;
+
+        res.status(201).jsonSuccess(responseData);
     } catch (error) {
         next(error);
     }
@@ -33,7 +44,18 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             password,
         });
 
-        res.jsonSuccess(result);
+        if (result.token) {
+            res.cookie('token', result.token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000 // 1 day
+            });
+        }
+
+        const { token, ...responseData } = result;
+
+        res.jsonSuccess(responseData);
     } catch (error) {
         next(error);
     }
@@ -61,6 +83,19 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
             otp_enable: fullUser.otp_enable,
             createdAt: fullUser.createdAt,
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        });
+        res.status(200).jsonSuccess({ message: 'Logged out successfully' });
     } catch (error) {
         next(error);
     }

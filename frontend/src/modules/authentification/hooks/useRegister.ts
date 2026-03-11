@@ -22,14 +22,17 @@ export const useRegister = () => {
     const [isSuccess, setIsSuccess] = useState(false);
 
     // Fetching auth state from Redux
-    const { isLoading, error: authError, token } = useSelector((state: AppState) => state.auth);
+    const { isLoading, error: authError } = useSelector((state: AppState) => state.auth);
 
-    // Redirect to profile after successful registration (token received)
+    // Redirect to login after successful registration
     useEffect(() => {
-        if (token) {
-            navigate('/profile');
+        if (isSuccess) {
+            const timer = setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+            return () => clearTimeout(timer);
         }
-    }, [token, navigate]);
+    }, [isSuccess, navigate]);
 
     // Dynamic validation on each change
     useEffect(() => {

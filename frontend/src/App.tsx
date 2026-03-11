@@ -5,6 +5,7 @@ import { LoginForm } from './modules/authentification/components/LoginForm'
 import { RegisterForm } from './modules/authentification/components/RegisterForm'
 import { OtpVerifyPage } from './modules/authentification/components/OtpVerifyPage'
 import { ProfilePage } from './modules/user/components/ProfilePage'
+import { EventsPage } from './modules/events/components/EventsPage'
 import './App.css'
 
 
@@ -21,6 +22,7 @@ function App() {
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/otp-verify" element={<OtpVerifyPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/events" element={<EventsPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

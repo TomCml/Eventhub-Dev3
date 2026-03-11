@@ -1,6 +1,3 @@
-import { PrismaClient } from '@prisma/client';
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
 import 'dotenv/config';
 import { EventRepositoryInterface } from '../../domain/interfaces/EventRepositoryInterface';
 import { Event, EventProps } from '../../domain/entities/Event';

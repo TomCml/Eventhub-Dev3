@@ -3,10 +3,12 @@ import { useDispatch } from "react-redux";
 import { type Dependencies } from "./dependencies";
 import authReducer from "../authentification/store/auth.slice";
 import userReducer from "../user/store/user.slice";
+import eventsReducer from "../events/store/events.slice";
 
 const reducers = combineReducers({
     auth: authReducer,
     user: userReducer,
+    events: eventsReducer,
 });
 
 export type AppStore = ReturnType<typeof createStore>;

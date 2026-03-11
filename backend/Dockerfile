@@ -17,5 +17,5 @@ RUN npx prisma generate
 # Exposer le port
 EXPOSE 3000
 
-# Lancer la migration puis le serveur
-CMD ["sh", "-c", "npx prisma migrate deploy && npx ts-node api/app.ts"]
+# Lancer la génération, la migration puis le serveur
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && npx ts-node api/app.ts"]

@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import { UserRepositoryInterface } from '../../domain/interfaces/UserRepositoryInterface';
 import { User, UserProps } from '../../domain/entities/User';

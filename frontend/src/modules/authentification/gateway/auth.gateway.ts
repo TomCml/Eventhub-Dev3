@@ -1,4 +1,6 @@
 export interface AuthGateway {
-    login(username: string, password: string): Promise<{ token: string }>;
-    register(payload: any): Promise<{ id: string }>;
+    login(email: string, password: string): Promise<any>;
+    register(payload: any): Promise<any>;
+    verifyOtpLogin(tempToken: string, otpToken: string): Promise<any>;
+    verifyBackupCode(tempToken: string, backupCode: string): Promise<any>;
 }

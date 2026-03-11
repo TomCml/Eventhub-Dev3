@@ -32,12 +32,13 @@ export class VerifyAndActivateOtpUseCase {
         }
 
         // Verify the OTP token
-        const isValid = await otpVerify({
+        const result = await otpVerify({
             token: input.otpToken,
             secret: user.otp_secret,
+            epochTolerance: 30, // Allow 30s clock drift
         });
 
-        if (!isValid) {
+        if (!result.valid) {
             throw new Error('Invalid OTP code');
         }
 

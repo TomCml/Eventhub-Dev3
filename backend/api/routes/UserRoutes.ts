@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AuthMiddleware } from "../middlewares";
-import { register, login, getProfile } from "../controllers/UserControllers";
+import { register, login, getProfile, logout } from "../controllers/UserControllers";
 
 const router = Router();
 
@@ -12,5 +12,8 @@ router.post("/login", login);
 
 // GET /users/profile - Profil (protégé)
 router.get("/profile", AuthMiddleware, getProfile);
+
+// GET /users/logout - Déconnexion
+router.post("/logout", AuthMiddleware, logout);
 
 export default router as Router;

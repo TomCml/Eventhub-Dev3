@@ -7,6 +7,17 @@ export const errorHandlerMiddleware = (err: any, req: Request, res: Response, ne
         code: err.statusCode || 500
     };
 
-    res.jsonError(formattedError.message, formattedError.code);
+    if (typeof res.jsonError === 'function') {
+        res.jsonError(formattedError.message, formattedError.code);
+    } else {
+        // Fallback if response middleware hasn't run (e.g. error during express.json() parsing)
+        res.status(formattedError.code).json({
+            success: false,
+            error: {
+                message: formattedError.message,
+                code: formattedError.code
+            }
+        });
+    }
 
 }

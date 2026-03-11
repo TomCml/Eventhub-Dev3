@@ -81,7 +81,19 @@ export const verifyOtpLogin = async (req: Request, res: Response, next: NextFunc
             userId: decoded.id,
             otpToken,
         });
-        res.jsonSuccess(result);
+
+        if (result.token) {
+            res.cookie('token', result.token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000 // 1 day
+            });
+        }
+
+        const { token, ...responseData } = result;
+
+        res.jsonSuccess(responseData);
     } catch (error: any) {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).jsonError('Temp token expired. Please login again.');
@@ -111,7 +123,19 @@ export const verifyBackupCode = async (req: Request, res: Response, next: NextFu
             userId: decoded.id,
             backupCode,
         });
-        res.jsonSuccess(result);
+
+        if (result.token) {
+            res.cookie('token', result.token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000 // 1 day
+            });
+        }
+
+        const { token, ...responseData } = result;
+
+        res.jsonSuccess(responseData);
     } catch (error: any) {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).jsonError('Temp token expired. Please login again.');

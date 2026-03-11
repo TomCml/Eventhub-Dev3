@@ -9,7 +9,7 @@ const pool = new Pool({
 })
 
 export const prisma = new PrismaClient({
-    adapter: new PrismaPg(pool)
+    adapter: new PrismaPg(pool as any)
 });
 
 //Merci Bocar

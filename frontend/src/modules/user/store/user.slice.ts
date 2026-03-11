@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { AppState } from '../../store/store';
-
-const API_BASE = 'http://localhost:3000/api';
+import type { Dependencies } from '../../store/dependencies';
 
 export interface UserProfile {
     id: string;
@@ -25,7 +23,6 @@ interface UserState {
     profile: UserProfile | null;
     isLoading: boolean;
     error: string | null;
-    // OTP setup state
     otpSetup: OtpSetupData | null;
     otpActivationResult: OtpActivationResult | null;
     isOtpLoading: boolean;
@@ -42,98 +39,47 @@ const initialState: UserState = {
     otpError: null,
 };
 
-// Fetch profile — appel réel vers le backend
-export const fetchProfile = createAsyncThunk(
+export const fetchProfile = createAsyncThunk<UserProfile, void, { extra: Dependencies }>(
     'user/fetchProfile',
-    async (_, { getState }) => {
-        const state = getState() as AppState;
-        const token = state.auth.token;
-
-        const response = await fetch(`${API_BASE}/users/profile`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Erreur lors du chargement du profil');
+    async (_, { extra, rejectWithValue }) => {
+        try {
+            return await extra.userGateway.getProfile();
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Erreur lors du chargement du profil');
         }
-
-        return data.data as UserProfile;
     }
 );
 
-// Generate OTP secret + QR code
-export const generateOtpSecret = createAsyncThunk(
+export const generateOtpSecret = createAsyncThunk<OtpSetupData, void, { extra: Dependencies }>(
     'user/generateOtpSecret',
-    async (_, { getState }) => {
-        const state = getState() as AppState;
-        const token = state.auth.token;
-
-        const response = await fetch(`${API_BASE}/otp/generate`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Erreur lors de la génération OTP');
+    async (_, { extra, rejectWithValue }) => {
+        try {
+            return await extra.userGateway.generateOtpSecret();
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Erreur lors de la génération OTP');
         }
-
-        return data.data as OtpSetupData;
     }
 );
 
-// Verify OTP and activate 2FA
-export const verifyAndActivateOtp = createAsyncThunk(
+export const verifyAndActivateOtp = createAsyncThunk<OtpActivationResult, string, { extra: Dependencies }>(
     'user/verifyAndActivateOtp',
-    async (otpToken: string, { getState }) => {
-        const state = getState() as AppState;
-        const token = state.auth.token;
-
-        const response = await fetch(`${API_BASE}/otp/verify-activation`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ otpToken }),
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Code OTP invalide');
+    async (otpToken, { extra, rejectWithValue }) => {
+        try {
+            return await extra.userGateway.verifyAndActivateOtp(otpToken);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Code OTP invalide');
         }
-
-        return data.data as OtpActivationResult;
     }
 );
 
-// Disable OTP
-export const disableOtp = createAsyncThunk(
+export const disableOtp = createAsyncThunk<any, void, { extra: Dependencies }>(
     'user/disableOtp',
-    async (_, { getState }) => {
-        const state = getState() as AppState;
-        const token = state.auth.token;
-
-        const response = await fetch(`${API_BASE}/otp/disable`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Erreur lors de la désactivation');
+    async (_, { extra, rejectWithValue }) => {
+        try {
+            return await extra.userGateway.disableOtp();
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Erreur lors de la désactivation');
         }
-
-        return data.data;
     }
 );
 
@@ -152,10 +98,14 @@ export const userSlice = createSlice({
         clearOtpError: (state) => {
             state.otpError = null;
         },
+        hydrateProfile: (state, action) => {
+            state.profile = action.payload;
+            state.isLoading = false;
+            state.error = null;
+        }
     },
     extraReducers: (builder) => {
         builder
-            // Fetch Profile 
             .addCase(fetchProfile.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -166,9 +116,8 @@ export const userSlice = createSlice({
             })
             .addCase(fetchProfile.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.error.message || "Erreur lors du chargement du profil";
+                state.error = (action.payload as string) || action.error.message || "Erreur lors du chargement du profil";
             })
-            // Generate OTP Secret
             .addCase(generateOtpSecret.pending, (state) => {
                 state.isOtpLoading = true;
                 state.otpError = null;
@@ -179,9 +128,8 @@ export const userSlice = createSlice({
             })
             .addCase(generateOtpSecret.rejected, (state, action) => {
                 state.isOtpLoading = false;
-                state.otpError = action.error.message || "Erreur OTP";
+                state.otpError = (action.payload as string) || action.error.message || "Erreur OTP";
             })
-            // Verify and Activate OTP
             .addCase(verifyAndActivateOtp.pending, (state) => {
                 state.isOtpLoading = true;
                 state.otpError = null;
@@ -189,16 +137,14 @@ export const userSlice = createSlice({
             .addCase(verifyAndActivateOtp.fulfilled, (state, action) => {
                 state.isOtpLoading = false;
                 state.otpActivationResult = action.payload;
-                // Update profile OTP state
                 if (state.profile) {
                     state.profile.otp_enable = 1;
                 }
             })
             .addCase(verifyAndActivateOtp.rejected, (state, action) => {
                 state.isOtpLoading = false;
-                state.otpError = action.error.message || "Code OTP invalide";
+                state.otpError = (action.payload as string) || action.error.message || "Code OTP invalide";
             })
-            // Disable OTP
             .addCase(disableOtp.pending, (state) => {
                 state.isOtpLoading = true;
                 state.otpError = null;
@@ -213,10 +159,10 @@ export const userSlice = createSlice({
             })
             .addCase(disableOtp.rejected, (state, action) => {
                 state.isOtpLoading = false;
-                state.otpError = action.error.message || "Erreur lors de la désactivation";
+                state.otpError = (action.payload as string) || action.error.message || "Erreur lors de la désactivation";
             });
     }
 });
 
-export const { clearProfile, clearOtpSetup, clearOtpError } = userSlice.actions;
+export const { clearProfile, clearOtpSetup, clearOtpError, hydrateProfile } = userSlice.actions;
 export default userSlice.reducer;
