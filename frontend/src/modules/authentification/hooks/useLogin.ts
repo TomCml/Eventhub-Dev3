@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../store/store';
-import { loginUser } from '../store/auth.slice';
+import { loginAction } from '../actions/auth.actions';
 import { useSelector } from 'react-redux';
 import type { AppState } from '../../store/store';
 
@@ -58,10 +58,10 @@ export const useLogin = () => {
         if (!validate()) return;
 
         try {
-            await dispatch(loginUser({
+            await dispatch(loginAction({
                 email: formData.email,
                 password: formData.password
-            })).unwrap();
+            }));
         } catch {
             // Error handled by Redux state
         }

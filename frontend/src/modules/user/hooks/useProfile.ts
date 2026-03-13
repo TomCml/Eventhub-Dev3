@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppDispatch } from '../../store/store';
 import { useSelector } from 'react-redux';
 import type { AppState } from '../../store/store';
-import { fetchProfile, disableOtp } from '../store/user.slice';
+import { fetchProfileAction, disableOtpAction } from '../actions/user.actions';
 
 export const useProfile = () => {
     const dispatch = useAppDispatch();
@@ -14,7 +14,7 @@ export const useProfile = () => {
     const [showTwoFactorModal, setShowTwoFactorModal] = useState(false);
 
     useEffect(() => {
-        dispatch(fetchProfile());
+        dispatch(fetchProfileAction());
     }, [dispatch]);
 
     const handleOpenTwoFactor = () => {
@@ -23,13 +23,13 @@ export const useProfile = () => {
 
     const handleCloseTwoFactor = () => {
         setShowTwoFactorModal(false);
-        dispatch(fetchProfile());
+        dispatch(fetchProfileAction());
     };
 
     const handleDisableOtp = async () => {
         try {
-            await dispatch(disableOtp()).unwrap();
-            dispatch(fetchProfile());
+            await dispatch(disableOtpAction());
+            dispatch(fetchProfileAction());
         } catch {
             // Error handled by Redux
         }

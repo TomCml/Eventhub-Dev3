@@ -1,5 +1,4 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import type { Dependencies } from '../../store/dependencies';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { UserProfile, OtpSetupData, OtpActivationResult } from '../domain/models';
 
 interface UserState {
@@ -22,54 +21,65 @@ const initialState: UserState = {
     otpError: null,
 };
 
-export const fetchProfile = createAsyncThunk<UserProfile, void, { extra: Dependencies }>(
-    'user/fetchProfile',
-    async (_, { extra, rejectWithValue }) => {
-        try {
-            return await extra.userGateway.getProfile();
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Erreur lors du chargement du profil');
-        }
-    }
-);
-
-export const generateOtpSecret = createAsyncThunk<OtpSetupData, void, { extra: Dependencies }>(
-    'user/generateOtpSecret',
-    async (_, { extra, rejectWithValue }) => {
-        try {
-            return await extra.userGateway.generateOtpSecret();
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Erreur lors de la génération OTP');
-        }
-    }
-);
-
-export const verifyAndActivateOtp = createAsyncThunk<OtpActivationResult, string, { extra: Dependencies }>(
-    'user/verifyAndActivateOtp',
-    async (otpToken, { extra, rejectWithValue }) => {
-        try {
-            return await extra.userGateway.verifyAndActivateOtp(otpToken);
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Code OTP invalide');
-        }
-    }
-);
-
-export const disableOtp = createAsyncThunk<any, void, { extra: Dependencies }>(
-    'user/disableOtp',
-    async (_, { extra, rejectWithValue }) => {
-        try {
-            return await extra.userGateway.disableOtp();
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.error?.message || error.message || 'Erreur lors de la désactivation');
-        }
-    }
-);
-
 export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
+        fetchProfilePending: (state) => {
+            state.isLoading = true;
+            state.error = null;
+        },
+        fetchProfileSuccess: (state, action: PayloadAction<UserProfile>) => {
+            state.isLoading = false;
+            state.profile = action.payload;
+        },
+        fetchProfileFailure: (state, action: PayloadAction<string>) => {
+            state.isLoading = false;
+            state.error = action.payload;
+        },
+        otpSetupPending: (state) => {
+            state.isOtpLoading = true;
+            state.otpError = null;
+        },
+        otpSetupSuccess: (state, action: PayloadAction<OtpSetupData>) => {
+            state.isOtpLoading = false;
+            state.otpSetup = action.payload;
+        },
+        otpSetupFailure: (state, action: PayloadAction<string>) => {
+            state.isOtpLoading = false;
+            state.otpError = action.payload;
+        },
+        otpVerifyPending: (state) => {
+            state.isOtpLoading = true;
+            state.otpError = null;
+        },
+        otpVerifySuccess: (state, action: PayloadAction<OtpActivationResult>) => {
+            state.isOtpLoading = false;
+            state.otpActivationResult = action.payload;
+            if (state.profile) {
+                state.profile.otp_enable = 1;
+            }
+        },
+        otpVerifyFailure: (state, action: PayloadAction<string>) => {
+            state.isOtpLoading = false;
+            state.otpError = action.payload;
+        },
+        otpDisablePending: (state) => {
+            state.isOtpLoading = true;
+            state.otpError = null;
+        },
+        otpDisableSuccess: (state) => {
+            state.isOtpLoading = false;
+            if (state.profile) {
+                state.profile.otp_enable = 0;
+            }
+            state.otpSetup = null;
+            state.otpActivationResult = null;
+        },
+        otpDisableFailure: (state, action: PayloadAction<string>) => {
+            state.isOtpLoading = false;
+            state.otpError = action.payload;
+        },
         clearProfile: (state) => {
             state.profile = null;
         },
@@ -86,66 +96,15 @@ export const userSlice = createSlice({
             state.isLoading = false;
             state.error = null;
         }
-    },
-    extraReducers: (builder) => {
-        builder
-            .addCase(fetchProfile.pending, (state) => {
-                state.isLoading = true;
-                state.error = null;
-            })
-            .addCase(fetchProfile.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.profile = action.payload;
-            })
-            .addCase(fetchProfile.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = (action.payload as string) || action.error.message || "Erreur lors du chargement du profil";
-            })
-            .addCase(generateOtpSecret.pending, (state) => {
-                state.isOtpLoading = true;
-                state.otpError = null;
-            })
-            .addCase(generateOtpSecret.fulfilled, (state, action) => {
-                state.isOtpLoading = false;
-                state.otpSetup = action.payload;
-            })
-            .addCase(generateOtpSecret.rejected, (state, action) => {
-                state.isOtpLoading = false;
-                state.otpError = (action.payload as string) || action.error.message || "Erreur OTP";
-            })
-            .addCase(verifyAndActivateOtp.pending, (state) => {
-                state.isOtpLoading = true;
-                state.otpError = null;
-            })
-            .addCase(verifyAndActivateOtp.fulfilled, (state, action) => {
-                state.isOtpLoading = false;
-                state.otpActivationResult = action.payload;
-                if (state.profile) {
-                    state.profile.otp_enable = 1;
-                }
-            })
-            .addCase(verifyAndActivateOtp.rejected, (state, action) => {
-                state.isOtpLoading = false;
-                state.otpError = (action.payload as string) || action.error.message || "Code OTP invalide";
-            })
-            .addCase(disableOtp.pending, (state) => {
-                state.isOtpLoading = true;
-                state.otpError = null;
-            })
-            .addCase(disableOtp.fulfilled, (state) => {
-                state.isOtpLoading = false;
-                if (state.profile) {
-                    state.profile.otp_enable = 0;
-                }
-                state.otpSetup = null;
-                state.otpActivationResult = null;
-            })
-            .addCase(disableOtp.rejected, (state, action) => {
-                state.isOtpLoading = false;
-                state.otpError = (action.payload as string) || action.error.message || "Erreur lors de la désactivation";
-            });
     }
 });
 
-export const { clearProfile, clearOtpSetup, clearOtpError, hydrateProfile } = userSlice.actions;
+export const {
+    fetchProfilePending, fetchProfileSuccess, fetchProfileFailure,
+    otpSetupPending, otpSetupSuccess, otpSetupFailure,
+    otpVerifyPending, otpVerifySuccess, otpVerifyFailure,
+    otpDisablePending, otpDisableSuccess, otpDisableFailure,
+    clearProfile, clearOtpSetup, clearOtpError, hydrateProfile
+} = userSlice.actions;
+
 export default userSlice.reducer;

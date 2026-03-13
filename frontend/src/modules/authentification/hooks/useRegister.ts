@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../store/store';
 import { useSelector } from 'react-redux';
 import type { AppState } from '../../store/store';
-import { registerUser } from '../store/auth.slice';
+import { registerAction } from '../actions/auth.actions';
 
 export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/;
 
@@ -71,11 +71,11 @@ export const useRegister = () => {
         if (!isFormValid) return;
 
         try {
-            await dispatch(registerUser({
+            await dispatch(registerAction({
                 username: formData.username,
                 email: formData.email,
                 password: formData.password
-            })).unwrap();
+            }));
 
             setIsSuccess(true);
             setFormData({ username: '', email: '', password: '', confirmPassword: '' });

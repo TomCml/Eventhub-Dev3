@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useAppDispatch } from '../../store/store';
 import { useSelector } from 'react-redux';
 import type { AppState } from '../../store/store';
-import { generateOtpSecret, verifyAndActivateOtp, clearOtpSetup, clearOtpError, disableOtp } from '../store/user.slice';
+import { clearOtpSetup, clearOtpError } from '../store/user.slice';
+import { generateOtpSecretAction, verifyAndActivateOtpAction, disableOtpAction } from '../actions/user.actions';
 
 export const useTwoFactor = (onClose: () => void) => {
     const dispatch = useAppDispatch();
@@ -13,13 +14,13 @@ export const useTwoFactor = (onClose: () => void) => {
     const [otpCode, setOtpCode] = useState('');
 
     const handleGenerate = () => {
-        dispatch(generateOtpSecret());
+        dispatch(generateOtpSecretAction());
     };
 
     const handleVerify = async () => {
         if (!otpCode) return;
         try {
-            await dispatch(verifyAndActivateOtp(otpCode)).unwrap();
+            await dispatch(verifyAndActivateOtpAction(otpCode));
         } catch {
             // Error handled by Redux
         }
@@ -27,7 +28,7 @@ export const useTwoFactor = (onClose: () => void) => {
 
     const handleDeactivate = async () => {
         try {
-            await dispatch(disableOtp()).unwrap();
+            await dispatch(disableOtpAction());
             onClose();
         } catch {
             // Error handled by Redux

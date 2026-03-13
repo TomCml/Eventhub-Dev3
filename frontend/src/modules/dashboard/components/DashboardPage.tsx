@@ -75,7 +75,7 @@ export const DashboardPage: React.FC = () => {
                             />
                             <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 13 }} />
                             <Tooltip
-                                formatter={(value: number) => [`${value} vue${value > 1 ? 's' : ''}`, 'Vues']}
+                                formatter={(value: any) => [`${value} vue${value > 1 ? 's' : ''}`, 'Vues']}
                                 cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }}
                             />
                             <Bar dataKey="vues" radius={[0, 6, 6, 0]} maxBarSize={40}>

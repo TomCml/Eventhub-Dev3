@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { RegisterUserUseCase, LoginUserUseCase } from '../../application/usecases';
 import { UserRepositoryDatabase } from '../../infrastructure/repositories/UserRepositoryDatabase';
 import { UserPayload } from '../../domain/entities/User';
+import { getCookieOptions, clearCookieOptions } from '../../utility/cookie.utility';
 
 
 const userRepository = new UserRepositoryDatabase();
@@ -19,12 +20,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         });
 
         if (result.token) {
-            res.cookie('token', result.token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 24 * 60 * 60 * 1000 // 1 day
-            });
+            res.cookie('token', result.token, getCookieOptions(24 * 60 * 60 * 1000));
         }
 
         const { token, ...responseData } = result;
@@ -45,12 +41,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         });
 
         if (result.token) {
-            res.cookie('token', result.token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 24 * 60 * 60 * 1000 // 1 day
-            });
+            res.cookie('token', result.token, getCookieOptions(24 * 60 * 60 * 1000));
         }
 
         const { token, ...responseData } = result;
@@ -90,11 +81,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
 
 export const logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-        });
+        res.clearCookie('token', clearCookieOptions());
         res.status(200).jsonSuccess({ message: 'Logged out successfully' });
     } catch (error) {
         next(error);

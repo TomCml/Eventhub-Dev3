@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../store/store';
 import { useSelector } from 'react-redux';
 import type { AppState } from '../../store/store';
-import { verifyOtpLogin, verifyBackupCode, clearError } from '../store/auth.slice';
+import { clearError } from '../store/auth.slice';
+import { verifyOtpLoginAction, verifyBackupCodeAction } from '../actions/auth.actions';
 
 export const useOtpVerify = () => {
     const dispatch = useAppDispatch();
@@ -40,7 +41,7 @@ export const useOtpVerify = () => {
         if (!tempToken || !otpCode) return;
         dispatch(clearError());
         try {
-            await dispatch(verifyOtpLogin({ tempToken, otpToken: otpCode })).unwrap();
+            await dispatch(verifyOtpLoginAction({ tempToken, otpToken: otpCode }));
         } catch {
             // Error handled by Redux
         }
@@ -50,7 +51,7 @@ export const useOtpVerify = () => {
         if (!tempToken || !backupCodeValue) return;
         dispatch(clearError());
         try {
-            await dispatch(verifyBackupCode({ tempToken, backupCode: backupCodeValue })).unwrap();
+            await dispatch(verifyBackupCodeAction({ tempToken, backupCode: backupCodeValue }));
         } catch {
             // Error handled by Redux
         }

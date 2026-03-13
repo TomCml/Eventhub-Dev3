@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { AppState } from '../../store/store';
 import { useAppDispatch } from '../../store/store';
-import { logoutUser } from '../../authentification/store/auth.slice';
+import { logoutAction } from '../../authentification/actions/auth.actions';
 
 export const useNavbar = () => {
     const { isAuthenticated } = useSelector((state: AppState) => state.auth);
@@ -10,7 +10,7 @@ export const useNavbar = () => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        dispatch(logoutUser());
+        dispatch(logoutAction());
         navigate('/login');
     };
 

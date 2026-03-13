@@ -1,15 +1,11 @@
-import type { UserProfile } from "../gateway/user.gateway";
+import type { UserProfile } from "../domain/models";
 
 //Utility function used in tests
 export const validateProfileForm = (formData: Partial<UserProfile>) => {
         const errors: Record<string, string> = {};
         
-        if (!formData.firstName?.trim()) {
-            errors.firstName = "Le prénom est requis";
-        }
-        
-        if (!formData.lastName?.trim()) {
-            errors.lastName = "Le nom est requis";
+        if (!formData.username?.trim()) {
+            errors.username = "Le nom d'utilisateur est requis";
         }
         
         if (!formData.email?.trim()) {
@@ -17,8 +13,7 @@ export const validateProfileForm = (formData: Partial<UserProfile>) => {
         }
 
         const isFormValid = !!(
-            formData.firstName?.trim() && 
-            formData.lastName?.trim() && 
+            formData.username?.trim() && 
             formData.email?.trim()
         );
 

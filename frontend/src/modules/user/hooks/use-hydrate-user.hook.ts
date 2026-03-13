@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppDispatch } from "../../store/store";
-import { fetchProfileAction } from "../actions/fetch-profile.action";
+import { fetchProfileAction } from "../actions/user.actions";
 
 export const useHydrateUser = () => {
     const dispatch = useAppDispatch();

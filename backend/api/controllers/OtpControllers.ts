@@ -11,6 +11,7 @@ import {
 import { UserRepositoryDatabase } from '../../infrastructure/repositories/UserRepositoryDatabase';
 import { OtpBackupCodeRepositoryDatabase } from '../../infrastructure/repositories/OtpBackupCodeRepositoryDatabase';
 import { UserPayload } from '../../domain/entities/User';
+import { getCookieOptions } from '../../utility/cookie.utility';
 
 
 const userRepository = new UserRepositoryDatabase();
@@ -83,12 +84,7 @@ export const verifyOtpLogin = async (req: Request, res: Response, next: NextFunc
         });
 
         if (result.token) {
-            res.cookie('token', result.token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 24 * 60 * 60 * 1000 // 1 day
-            });
+            res.cookie('token', result.token, getCookieOptions(24 * 60 * 60 * 1000));
         }
 
         const { token, ...responseData } = result;
@@ -125,12 +121,7 @@ export const verifyBackupCode = async (req: Request, res: Response, next: NextFu
         });
 
         if (result.token) {
-            res.cookie('token', result.token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 24 * 60 * 60 * 1000 // 1 day
-            });
+            res.cookie('token', result.token, getCookieOptions(24 * 60 * 60 * 1000));
         }
 
         const { token, ...responseData } = result;
