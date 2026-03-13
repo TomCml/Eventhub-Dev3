@@ -18,7 +18,7 @@ const initialState: EventsState = {
     currentPage: 1,
     totalPages: 1,
     totalCount: 0,
-    limit: 6,
+    limit: 3,
 };
 
 export const eventsSlice = createSlice({

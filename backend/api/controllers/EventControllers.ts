@@ -51,7 +51,7 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
 export const getPaginatedEvents = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 6;
+        const limit = parseInt(req.query.limit as string) || 3;
         const result = await getPaginatedEventsUseCase.execute(page, limit);
         res.jsonSuccess({
             ...result,

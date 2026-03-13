@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, Box, Alert, Container, Pagination } from '@mui/material';
+import { Grid, Typography, Box, Alert, Container, Pagination, Button } from '@mui/material';
 import { useEvents } from '../hooks/useEvents';
 import { EventCard } from './EventCard';
 import { EventCardSkeleton } from './EventCardSkeleton';
@@ -47,7 +47,7 @@ export const EventsPage: React.FC = () => {
             </Grid>
 
             {!isLoading && totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 6, gap: 2 }}>
                     <Pagination
                         count={totalPages}
                         page={currentPage}
@@ -57,6 +57,15 @@ export const EventsPage: React.FC = () => {
                         showFirstButton
                         showLastButton
                     />
+                    {currentPage < totalPages && (
+                        <Button 
+                            variant="outlined" 
+                            onClick={() => goToPage(currentPage + 1)}
+                            sx={{ borderRadius: 2, fontWeight: 700 }}
+                        >
+                            Page Suivante
+                        </Button>
+                    )}
                 </Box>
             )}
         </Box>

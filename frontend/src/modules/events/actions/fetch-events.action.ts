@@ -20,7 +20,7 @@ export const fetchEventsAction = () => async (
     }
 };
 
-export const fetchPaginatedEventsAction = (page: number, limit: number = 6) => async (
+export const fetchPaginatedEventsAction = (page: number, limit: number = 3) => async (
     dispatch: AppDispatch,
     _getState: AppGetState,
     { eventGateway }: Dependencies
