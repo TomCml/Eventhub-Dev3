@@ -3,16 +3,18 @@ import {
     CreateEventUseCase,
     GetAllEventsUseCase,
     GetEventByIdUseCase,
+    GetPaginatedEventsUseCase,
     UpdateEventUseCase,
     DeleteEventUseCase
 } from '../../application/usecases';
 import { EventRepositoryDatabase } from '../../infrastructure/repositories/EventRepositoryDatabase';
 
-// Instanciation du repository et des use cases
+
 const eventRepository = new EventRepositoryDatabase();
 const createEventUseCase = new CreateEventUseCase(eventRepository);
 const getAllEventsUseCase = new GetAllEventsUseCase(eventRepository);
 const getEventByIdUseCase = new GetEventByIdUseCase(eventRepository);
+const getPaginatedEventsUseCase = new GetPaginatedEventsUseCase(eventRepository);
 const updateEventUseCase = new UpdateEventUseCase(eventRepository);
 const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
 
@@ -44,6 +46,27 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
     } catch (error) {
         next(error);
     }
+};
+
+export const getPaginatedEvents = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 6;
+        const result = await getPaginatedEventsUseCase.execute(page, limit);
+        res.jsonSuccess({
+            ...result,
+            data: result.data.map(e => e.props),
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getEvents = async (req: Request, res: Response, next: NextFunction) => {
+    if (req.query.page !== undefined || req.query.limit !== undefined) {
+        return getPaginatedEvents(req, res, next);
+    }
+    return getAllEvents(req, res, next);
 };
 
 export const getEventById = async (req: Request, res: Response, next: NextFunction) => {

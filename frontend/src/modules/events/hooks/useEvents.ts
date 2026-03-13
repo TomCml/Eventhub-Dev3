@@ -2,27 +2,30 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { AppState } from '../../store/store';
 import { useAppDispatch } from '../../store/store';
-import { fetchEventsAction } from '../actions/fetch-events.action';
+import { fetchPaginatedEventsAction } from '../actions/fetch-events.action';
+import { setPage } from '../store/events.slice';
 
 export const useEvents = () => {
     const dispatch = useAppDispatch();
-    const { events, isLoading, error } = useSelector((state: AppState) => state.events);
+    const { events, isLoading, error, currentPage, totalPages, totalCount, limit } = useSelector(
+        (state: AppState) => state.events
+    );
 
     useEffect(() => {
-        // Fetch only if needed (e.g., list empty and no error)
-        if (events.length === 0 && !error && !isLoading) {
-            dispatch(fetchEventsAction());
-        }
-    }, [dispatch, events.length, error, isLoading]);
+        dispatch(fetchPaginatedEventsAction(currentPage, limit));
+    }, [dispatch, currentPage, limit]);
 
-    const refreshEvents = () => {
-        dispatch(fetchEventsAction());
+    const goToPage = (page: number) => {
+        dispatch(setPage(page));
     };
 
     return {
         events,
         isLoading,
         error,
-        refreshEvents,
+        currentPage,
+        totalPages,
+        totalCount,
+        goToPage,
     };
 };

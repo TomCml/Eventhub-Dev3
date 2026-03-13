@@ -2,7 +2,7 @@ import { Router } from "express";
 import { AuthMiddleware } from "../middlewares";
 import {
     createEvent,
-    getAllEvents,
+    getEvents,
     getEventById,
     updateEvent,
     deleteEvent
@@ -10,7 +10,7 @@ import {
 
 const router = Router();
 
-router.get("/", AuthMiddleware, getAllEvents);
+router.get("/", AuthMiddleware, getEvents);
 
 router.get("/:id", AuthMiddleware, getEventById);
 
