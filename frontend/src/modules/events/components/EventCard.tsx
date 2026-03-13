@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Box, Chip, Button } from '@mui/material';
-import type { EventModel } from '../gateway/event.gateway';
+import type { EventModel } from '../domain/models';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PeopleIcon from '@mui/icons-material/People';
@@ -32,7 +32,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
                 <Typography variant="h6" component="h2" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
                     {event.title}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
                     <CalendarMonthIcon fontSize="small" color="primary" />
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{formattedDate}</Typography>
@@ -55,12 +55,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
                 </Typography>
 
                 <Box sx={{ mt: 'auto', pt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Chip 
-                        icon={<PeopleIcon />} 
-                        label={`${event.capacity} places`} 
-                        size="small" 
-                        variant="outlined" 
-                        sx={{ fontWeight: 600 }} 
+                    <Chip
+                        icon={<PeopleIcon />}
+                        label={`${event.capacity} places`}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontWeight: 600 }}
                     />
                     <Typography variant="h6" color="primary.main" sx={{ fontWeight: 800 }}>
                         {event.price === 0 || !event.price ? 'Gratuit' : `${event.price}€`}
