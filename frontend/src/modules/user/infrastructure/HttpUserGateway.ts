@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { UserGateway } from "../gateway/user.gateway";
-import type { UserProfile } from "../store/user.slice";
+import type { UserProfile } from "../domain/models";
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000/api';
 

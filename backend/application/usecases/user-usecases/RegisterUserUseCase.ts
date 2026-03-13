@@ -23,7 +23,7 @@ export class RegisterUserUseCase {
     constructor(private readonly userRepository: UserRepositoryInterface) { }
 
     async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
-        // Validations
+
         if (!input.username || input.username.trim() === '') {
             throw new Error('Username is required');
         }
@@ -36,17 +36,17 @@ export class RegisterUserUseCase {
             throw new Error('Password must be at least 6 characters');
         }
 
-        // Check if user already exists
+
         const existingUser = await this.userRepository.findByEmail(input.email);
         if (existingUser) {
             throw new Error('Email already registered');
         }
 
-        // Hash password
+
         const salt = await generateSalt();
         const hashedPassword = await hashPassword(input.password, salt);
 
-        // Create user
+
         const userProps: UserProps = {
             id: randomUUID(),
             username: input.username,
@@ -63,7 +63,7 @@ export class RegisterUserUseCase {
 
         const createdUser = await this.userRepository.create(user);
 
-        // Generate token
+
         const token = generateSignature({
             id: createdUser.id,
             username: createdUser.username,

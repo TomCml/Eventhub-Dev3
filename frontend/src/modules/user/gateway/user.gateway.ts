@@ -1,4 +1,4 @@
-import type { UserProfile } from "../store/user.slice";
+import type { UserProfile } from "../domain/models";
 
 export interface UserGateway {
     getProfile(): Promise<UserProfile>;

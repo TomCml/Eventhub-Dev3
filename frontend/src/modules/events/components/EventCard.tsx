@@ -4,12 +4,14 @@ import type { EventModel } from '../gateway/event.gateway';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PeopleIcon from '@mui/icons-material/People';
+import { useTrackEventView } from '../../analytics/hooks/useTrackEventView';
 
 interface EventCardProps {
     event: EventModel;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
+    const { trackView } = useTrackEventView();
     const formattedDate = new Date(event.startDate).toLocaleDateString('fr-FR', {
         day: 'numeric',
         month: 'long',
@@ -66,7 +68,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
                 </Box>
             </CardContent>
             <Box sx={{ p: 2, pt: 0 }}>
-                <Button variant="contained" fullWidth sx={{ borderRadius: 2, py: 1, fontWeight: 700 }}>
+                <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{ borderRadius: 2, py: 1, fontWeight: 700 }}
+                    onClick={() => trackView(event.id)}
+                >
                     Voir le détail
                 </Button>
             </Box>

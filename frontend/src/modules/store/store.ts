@@ -4,11 +4,15 @@ import { type Dependencies } from "./dependencies";
 import authReducer from "../authentification/store/auth.slice";
 import userReducer from "../user/store/user.slice";
 import eventsReducer from "../events/store/events.slice";
+import analyticsReducer from "../analytics/store/analytics.slice";
+import dashboardReducer from "../dashboard/store/dashboard.slice";
 
 const reducers = combineReducers({
     auth: authReducer,
     user: userReducer,
     events: eventsReducer,
+    analytics: analyticsReducer,
+    dashboard: dashboardReducer,
 });
 
 export type AppStore = ReturnType<typeof createStore>;

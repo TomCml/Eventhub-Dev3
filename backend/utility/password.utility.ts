@@ -30,8 +30,11 @@ export const validateSignature = (req: any) => {
     
     if (signature) {
         try {
-            const payload = jwt.verify(signature, getEnvVariable("JWT_SECRET")) as UserPayload;
-            req.user = payload;
+            const payload = jwt.verify(signature, getEnvVariable("JWT_SECRET")) as any;
+            if (payload.purpose === 'otp-verification') {
+                return false;
+            }
+            req.user = payload as UserPayload;
             return true;
         } catch (error) {
             console.error("Token verification failed:", error);

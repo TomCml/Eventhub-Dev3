@@ -1,5 +1,6 @@
 import axios from "axios";
-import type { EventGateway, EventModel } from "../gateway/event.gateway";
+import type { EventGateway } from "../gateway/event.gateway";
+import type { EventModel, PaginatedResponse } from "../domain/models";
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000/api';
 
@@ -27,6 +28,19 @@ export class HttpEventGateway implements EventGateway {
                 return null;
             }
             console.error(`Failed to fetch event ${id}:`, error);
+            throw error;
+        }
+    }
+
+    async findPaginated(page: number, limit: number): Promise<PaginatedResponse> {
+        try {
+            const response = await axios.get(`${API_BASE}/events`, {
+                params: { page, limit },
+                withCredentials: true,
+            });
+            return response.data.data;
+        } catch (error) {
+            console.error("Failed to fetch paginated events:", error);
             throw error;
         }
     }

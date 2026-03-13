@@ -6,30 +6,12 @@ interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
-    // OTP state
+
     otpRequired: boolean;
     tempToken: string | null;
 }
 
-interface LoginResponse {
-    otpRequired?: boolean;
-    tempToken?: string;
-    user: {
-        id: string;
-        username: string;
-        email: string;
-        createdAt: string;
-    };
-}
-
-interface RegisterResponse {
-    user: {
-        id: string;
-        username: string;
-        email: string;
-        createdAt: string;
-    };
-}
+import type { LoginResponse, RegisterResponse } from '../domain/models';
 
 const initialState: AuthState = {
     isAuthenticated: false,
@@ -39,7 +21,7 @@ const initialState: AuthState = {
     tempToken: null,
 };
 
-// Login thunk
+
 export const loginUser = createAsyncThunk<LoginResponse, { email: string; password: string }, { extra: Dependencies }>(
     'auth/login',
     async (payload, { extra, rejectWithValue }) => {
@@ -51,7 +33,7 @@ export const loginUser = createAsyncThunk<LoginResponse, { email: string; passwo
     }
 );
 
-// Register thunk
+
 export const registerUser = createAsyncThunk<RegisterResponse, { username: string; email: string; password: string }, { extra: Dependencies }>(
     'auth/register',
     async (payload, { extra, rejectWithValue }) => {
@@ -63,7 +45,7 @@ export const registerUser = createAsyncThunk<RegisterResponse, { username: strin
     }
 );
 
-// OTP login verification thunk
+
 export const verifyOtpLogin = createAsyncThunk<LoginResponse, { tempToken: string; otpToken: string }, { extra: Dependencies }>(
     'auth/verifyOtpLogin',
     async (payload, { extra, rejectWithValue }) => {
@@ -75,7 +57,7 @@ export const verifyOtpLogin = createAsyncThunk<LoginResponse, { tempToken: strin
     }
 );
 
-// Backup code verification thunk
+
 export const verifyBackupCode = createAsyncThunk<LoginResponse, { tempToken: string; backupCode: string }, { extra: Dependencies }>(
     'auth/verifyBackupCode',
     async (payload, { extra, rejectWithValue }) => {
@@ -87,7 +69,7 @@ export const verifyBackupCode = createAsyncThunk<LoginResponse, { tempToken: str
     }
 );
 
-// Logout thunk
+
 export const logoutUser = createAsyncThunk<void, void, { extra: Dependencies }>(
     'auth/logout',
     async (_, { extra, rejectWithValue }) => {
@@ -120,7 +102,7 @@ export const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Login
+
             .addCase(loginUser.pending, (state) => { state.isLoading = true; state.error = null; })
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.isLoading = false;
@@ -137,17 +119,17 @@ export const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = (action.payload as string) || action.error.message || "Erreur inconnue";
             })
-            // Register
+
             .addCase(registerUser.pending, (state) => { state.isLoading = true; state.error = null; })
             .addCase(registerUser.fulfilled, (state) => {
                 state.isLoading = false;
-                state.isAuthenticated = false; // No auto-login on register as requested
+                state.isAuthenticated = false;
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = (action.payload as string) || action.error.message || "Erreur inconnue";
             })
-            // OTP Login Verification
+
             .addCase(verifyOtpLogin.pending, (state) => { state.isLoading = true; state.error = null; })
             .addCase(verifyOtpLogin.fulfilled, (state) => {
                 state.isLoading = false;
@@ -159,7 +141,7 @@ export const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = (action.payload as string) || action.error.message || "Code OTP invalide";
             })
-            // Backup Code Verification
+
             .addCase(verifyBackupCode.pending, (state) => { state.isLoading = true; state.error = null; })
             .addCase(verifyBackupCode.fulfilled, (state) => {
                 state.isLoading = false;
@@ -171,7 +153,7 @@ export const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = (action.payload as string) || action.error.message || "Code de secours invalide";
             })
-            // Logout
+
             .addCase(logoutUser.fulfilled, (state) => {
                 state.isAuthenticated = false;
                 state.otpRequired = false;
@@ -179,7 +161,7 @@ export const authSlice = createSlice({
                 state.error = null;
             })
             .addCase(logoutUser.rejected, (state) => {
-                // Even if backend logout fails, we clear the local state to avoid blocking the user
+
                 state.isAuthenticated = false;
                 state.otpRequired = false;
                 state.tempToken = null;

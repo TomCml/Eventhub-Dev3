@@ -12,7 +12,7 @@ import { UserRepositoryDatabase } from '../../infrastructure/repositories/UserRe
 import { OtpBackupCodeRepositoryDatabase } from '../../infrastructure/repositories/OtpBackupCodeRepositoryDatabase';
 import { UserPayload } from '../../domain/entities/User';
 
-// Instanciation des repositories et des use cases
+
 const userRepository = new UserRepositoryDatabase();
 const backupCodeRepository = new OtpBackupCodeRepositoryDatabase();
 
@@ -22,7 +22,7 @@ const verifyOtpLoginUseCase = new VerifyOtpLoginUseCase(userRepository);
 const verifyBackupCodeUseCase = new VerifyBackupCodeUseCase(userRepository, backupCodeRepository);
 const disableOtpUseCase = new DisableOtpUseCase(userRepository, backupCodeRepository);
 
-// POST /otp/generate — Génère un secret OTP + QR code (auth requise)
+
 export const generateOtpSecret = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = (req as Request & { user?: UserPayload }).user;
@@ -37,7 +37,7 @@ export const generateOtpSecret = async (req: Request, res: Response, next: NextF
     }
 };
 
-// POST /otp/verify-activation — Vérifie l'OTP et active le 2FA (auth requise)
+
 export const verifyAndActivateOtp = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = (req as Request & { user?: UserPayload }).user;
@@ -60,7 +60,7 @@ export const verifyAndActivateOtp = async (req: Request, res: Response, next: Ne
     }
 };
 
-// POST /otp/verify-login — Vérifie l'OTP lors du login (temp token requis)
+
 export const verifyOtpLogin = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { tempToken, otpToken } = req.body;
@@ -69,12 +69,12 @@ export const verifyOtpLogin = async (req: Request, res: Response, next: NextFunc
             return res.status(400).jsonError('tempToken and otpToken are required');
         }
 
-        // Verify and decode the temp token
+
         const SECRET_KEY = getEnvVariable("JWT_SECRET");
         const decoded = jwt.verify(tempToken, SECRET_KEY) as { id: string; purpose: string };
 
         if (decoded.purpose !== 'otp-verification') {
-            return res.status(401).jsonError('Invalid temp token');
+            return res.status(401).jsonError('Not Authorized');
         }
 
         const result = await verifyOtpLoginUseCase.execute({
@@ -95,14 +95,14 @@ export const verifyOtpLogin = async (req: Request, res: Response, next: NextFunc
 
         res.jsonSuccess(responseData);
     } catch (error: any) {
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).jsonError('Temp token expired. Please login again.');
+        if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
+            return res.status(401).jsonError('Invalid or expired session');
         }
         next(error);
     }
 };
 
-// POST /otp/verify-backup — Utilise un code de secours (temp token requis)
+
 export const verifyBackupCode = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { tempToken, backupCode } = req.body;
@@ -111,12 +111,12 @@ export const verifyBackupCode = async (req: Request, res: Response, next: NextFu
             return res.status(400).jsonError('tempToken and backupCode are required');
         }
 
-        // Verify and decode the temp token
+
         const SECRET_KEY = getEnvVariable("JWT_SECRET");
         const decoded = jwt.verify(tempToken, SECRET_KEY) as { id: string; purpose: string };
 
         if (decoded.purpose !== 'otp-verification') {
-            return res.status(401).jsonError('Invalid temp token');
+            return res.status(401).jsonError('Not Authorized');
         }
 
         const result = await verifyBackupCodeUseCase.execute({
@@ -137,14 +137,14 @@ export const verifyBackupCode = async (req: Request, res: Response, next: NextFu
 
         res.jsonSuccess(responseData);
     } catch (error: any) {
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).jsonError('Temp token expired. Please login again.');
+        if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
+            return res.status(401).jsonError('Invalid or expired session');
         }
         next(error);
     }
 };
 
-// POST /otp/disable — Désactive le 2FA (auth requise)
+
 export const disableOtp = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = (req as Request & { user?: UserPayload }).user;

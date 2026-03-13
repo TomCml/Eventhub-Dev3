@@ -1,4 +1,4 @@
-import { EventRepositoryInterface } from '../../domain/interfaces/EventRepositoryInterface';
+import { EventRepositoryInterface, PaginatedResult } from '../../domain/interfaces/EventRepositoryInterface';
 import { Event } from '../../domain/entities/Event';
 
 export class InMemoryEventRepository implements EventRepositoryInterface {
@@ -11,6 +11,18 @@ export class InMemoryEventRepository implements EventRepositoryInterface {
 
     async findAll(): Promise<Event[]> {
         return this.events;
+    }
+
+    async findPaginated(page: number, limit: number): Promise<PaginatedResult<Event>> {
+        const skip = (page - 1) * limit;
+        const sliced = this.events.slice(skip, skip + limit);
+        return {
+            data: sliced,
+            total: this.events.length,
+            page,
+            limit,
+            totalPages: Math.ceil(this.events.length / limit),
+        };
     }
 
     async findById(id: string): Promise<Event | null> {

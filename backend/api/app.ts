@@ -10,7 +10,7 @@ dotenv.config();
 
 const app = express();
 
-// Middlewares globaux
+
 app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.headers['access-control-request-private-network'] === 'true') {
         res.setHeader('Access-Control-Allow-Private-Network', 'true');
@@ -18,7 +18,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
-// Autoriser toutes les origines (répond avec l'origine demandée) et permettre les credentials
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(ApiResponseMiddleware);
 app.use(express.json());
@@ -26,7 +26,7 @@ app.use(cookieParser());
 
 app.use('/api', Router);
 
-// Middleware d'erreur 
+
 app.use(errorHandlerMiddleware);
 
 const PORT = getEnvVariable('PORT') || 3000;

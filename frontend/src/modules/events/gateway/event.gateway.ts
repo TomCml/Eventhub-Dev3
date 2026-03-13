@@ -1,19 +1,7 @@
-export interface EventModel {
-    id: string;
-    title: string;
-    description: string | null;
-    startDate: string;
-    venueId: string;
-    capacity: number;
-    price: number | null;
-    organizerId: string;
-    categoryId: string;
-    imageUrl: string | null;
-    createdAt: string;
-    updatedAt: string;
-}
+import type { EventModel, PaginatedResponse } from "../domain/models";
 
 export interface EventGateway {
     findAll(): Promise<EventModel[]>;
     findById(id: string): Promise<EventModel | null>;
+    findPaginated(page: number, limit: number): Promise<PaginatedResponse>;
 }

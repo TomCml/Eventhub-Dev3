@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { EventRepositoryInterface } from '../../domain/interfaces/EventRepositoryInterface';
+import { EventRepositoryInterface, PaginatedResult } from '../../domain/interfaces/EventRepositoryInterface';
 import { Event, EventProps } from '../../domain/entities/Event';
 import { prisma } from '../database/db';
 
@@ -27,6 +27,25 @@ export class EventRepositoryDatabase implements EventRepositoryInterface {
     async findAll(): Promise<Event[]> {
         const events = await prisma.event.findMany();
         return events.map((e) => new Event(e as EventProps));
+    }
+
+    async findPaginated(page: number, limit: number): Promise<PaginatedResult<Event>> {
+        const skip = (page - 1) * limit;
+        const [events, total] = await prisma.$transaction([
+            prisma.event.findMany({
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+            prisma.event.count(),
+        ]);
+        return {
+            data: events.map((e) => new Event(e as EventProps)),
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 
     async findById(id: string): Promise<Event | null> {

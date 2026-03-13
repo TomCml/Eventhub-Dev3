@@ -52,3 +52,13 @@ model OtpBackupCode {
     nb_consecutive_tests Int    @default(0)
     user                 User   @relation(fields: [user_id], references: [id])
 }
+
+model EventView {
+  id       String   @id @default(uuid())
+  eventId  String
+  userId   String
+  viewedAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([userId])
+}

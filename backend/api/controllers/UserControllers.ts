@@ -3,7 +3,7 @@ import { RegisterUserUseCase, LoginUserUseCase } from '../../application/usecase
 import { UserRepositoryDatabase } from '../../infrastructure/repositories/UserRepositoryDatabase';
 import { UserPayload } from '../../domain/entities/User';
 
-// Instanciation du repository et des use cases
+
 const userRepository = new UserRepositoryDatabase();
 const registerUserUseCase = new RegisterUserUseCase(userRepository);
 const loginUserUseCase = new LoginUserUseCase(userRepository);
@@ -63,14 +63,14 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
 export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // req.user est défini par l'AuthMiddleware
+
         const user = (req as Request & { user?: UserPayload }).user;
 
         if (!user) {
             return res.status(401).jsonError('Not authenticated');
         }
 
-        // Récupérer les données complètes de l'utilisateur (incluant otp_enable)
+
         const fullUser = await userRepository.findById(user.id);
         if (!fullUser) {
             return res.status(404).jsonError('User not found');

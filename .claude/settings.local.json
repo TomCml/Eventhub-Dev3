@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node create_dev3.js)"
+    ]
+  }
+}

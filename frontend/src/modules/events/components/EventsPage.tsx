@@ -1,10 +1,11 @@
 import React from 'react';
-import { Grid, Typography, Box, Alert, Skeleton, Container } from '@mui/material';
+import { Grid, Typography, Box, Alert, Container, Pagination } from '@mui/material';
 import { useEvents } from '../hooks/useEvents';
 import { EventCard } from './EventCard';
+import { EventCardSkeleton } from './EventCardSkeleton';
 
 export const EventsPage: React.FC = () => {
-    const { events, isLoading, error } = useEvents();
+    const { events, isLoading, error, currentPage, totalPages, goToPage } = useEvents();
 
     if (error) {
         return (
@@ -27,13 +28,9 @@ export const EventsPage: React.FC = () => {
 
             <Grid container spacing={4}>
                 {isLoading ? (
-                    // Display skeletons while loading
                     Array.from(new Array(6)).map((_, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 3, mb: 1 }} />
-                            <Skeleton width="60%" height={30} />
-                            <Skeleton width="40%" height={20} />
-                            <Skeleton variant="rectangular" height={100} sx={{ mt: 2, borderRadius: 2 }} />
+                            <EventCardSkeleton />
                         </Grid>
                     ))
                 ) : events.length > 0 ? (
@@ -48,6 +45,20 @@ export const EventsPage: React.FC = () => {
                     </Grid>
                 )}
             </Grid>
+
+            {!isLoading && totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                    <Pagination
+                        count={totalPages}
+                        page={currentPage}
+                        onChange={(_, page) => goToPage(page)}
+                        color="primary"
+                        size="large"
+                        showFirstButton
+                        showLastButton
+                    />
+                </Box>
+            )}
         </Box>
     );
 };

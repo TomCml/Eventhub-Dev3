@@ -1,23 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import type { Dependencies } from '../../store/dependencies';
-
-export interface UserProfile {
-    id: string;
-    username: string;
-    email: string;
-    otp_enable: number;
-    createdAt: string;
-}
-
-interface OtpSetupData {
-    qrCodeDataUrl: string;
-    manualKey: string;
-}
-
-interface OtpActivationResult {
-    success: boolean;
-    backupCodes: string[];
-}
+import type { UserProfile, OtpSetupData, OtpActivationResult } from '../domain/models';
 
 interface UserState {
     profile: UserProfile | null;
@@ -98,7 +81,7 @@ export const userSlice = createSlice({
         clearOtpError: (state) => {
             state.otpError = null;
         },
-        hydrateProfile: (state, action) => {
+        hydrateProfile: (state, action: PayloadAction<UserProfile>) => {
             state.profile = action.payload;
             state.isLoading = false;
             state.error = null;

@@ -24,7 +24,7 @@ export class LoginUserUseCase {
     constructor(private readonly userRepository: UserRepositoryInterface) { }
 
     async execute(input: LoginUserInput): Promise<LoginUserOutput> {
-        // Validations
+
         if (!input.email || input.email.trim() === '') {
             throw new Error('Email is required');
         }
@@ -33,14 +33,14 @@ export class LoginUserUseCase {
             throw new Error('Password is required');
         }
 
-        // Login (checks password internally)
+
         const user = await this.userRepository.login(input.email, input.password);
 
         if (!user) {
             throw new Error('Invalid email or password');
         }
 
-        // If OTP is enabled, return a temp token for OTP verification
+
         if (user.otp_enable === 1) {
             const SECRET_KEY = getEnvVariable("JWT_SECRET");
             const tempToken = jwt.sign(
@@ -62,7 +62,7 @@ export class LoginUserUseCase {
             };
         }
 
-        // Generate full token (no OTP)
+
         const token = generateSignature({
             id: user.id,
             username: user.username,
